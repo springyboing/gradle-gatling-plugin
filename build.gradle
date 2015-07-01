@@ -1,27 +1,50 @@
+plugins {
+    id "com.jfrog.bintray" version "1.2"
+}
+
 apply plugin: 'groovy'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: "com.jfrog.bintray"
 
 group = 'uk.gov'
-version = '1.2-SNAPSHOT'
+version = '1.2-MP'
 
-repositories.mavenCentral()
+repositories.jcenter()
+
 dependencies {
 	compile gradleApi()
 }
 
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
+		mavenGroovy(MavenPublication) {
 			from components.java
 		}
 	}
-	repositories {
-		maven {
-			url '/srv/maven'
-		}
+}
+
+bintray {
+	user = getPropertyOrUseDefault("bintrayUser", "fake_user")
+	key = getPropertyOrUseDefault("bintrayKey", "fake_key")
+	publications = ['mavenGroovy']
+	publish = true
+
+	def projectName = project.name ?: 'n/a'
+	def projectDescription = project.description ?: 'n/a'
+
+	pkg {
+        repo = 'mp-maven-public'
+        name = 'gradle-gatling-plugin'
+				userOrg = 'metapack'
+        name = projectName
+        desc = projectDescription
+        vcsUrl = 'https://github.com/springyboing/gradle-gatling-plugin.git'
+        licenses = ['MIT']
 	}
 }
 
 defaultTasks 'clean', 'publishToMavenLocal'
 
+String getPropertyOrUseDefault(String propertyName, String defaultValue) {
+    hasProperty(propertyName) ? getProperty(propertyName) : defaultValue
+}
